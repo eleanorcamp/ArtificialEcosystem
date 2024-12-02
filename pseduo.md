@@ -1,5 +1,5 @@
 Problem statement:
-- Simulate some version of a simple artificial ecosystem. As an example:
+    Simulate some version of a simple artificial ecosystem. As an example:
 
     Artificial life simulation 
     Everything takes place in a 100 meter by 100 meter square
@@ -28,47 +28,47 @@ Questions from problem statement:
 
 
 What we'll need:
-Eater class
-    - 4 genes
-        1. dictates movement
-        2. dictates reproduction
-        3. not sure yet
-        4. not sure yet
-    - energy 'meter'
-    - age count
+    Eater class
+        - 4 genes
+            1. dictates movement
+            2. dictates reproduction
+            3. not sure yet
+            4. not sure yet
+        - energy 'meter'
+        - age count
 
-    for my intrigue:
-        - total plants eaten
-        - total distance moved
-        - direct number of offspring (kids but not grand-kids)
+        for my intrigue:
+            - total plants eaten
+            - total distance moved
+            - direct number of offspring (kids but not grand-kids)
 
-Plant class
-    - age ?
+    Plant class
+        - age ?
 
 
-Plot class (the actual 100x100 m square)
-    - list of all eaters and their locations
-    - list of all plants and their locations
+    Plot class (the actual 100x100 m square)
+        - list of all eaters and their locations
+        - list of all plants and their locations
 
-    function to limit number of eaters (problem states there is room for 1000)
+        function to limit number of eaters (problem states there is room for 1000)
 
 
 Function to make new plants every season
-new_plants():
-    get points where new plants *can* grow
-    grow 100 **new** pants in the available points
+    new_plants():
+        get points where new plants *can* grow
+        grow 100 **new** pants in the available points
 
 
 Overarching simulate 100 time periods
-sim_season():
-    for i in range(100):
-        sim_period
+    sim_season():
+        for i in range(100):
+            sim_period
 
 Simulation of a single time period
-sim_period():
-    go through Plot's list of eaters:
-        pick whether to move or reproduce
-        adjust eater/plant list accordingly
+    sim_period():
+        go through Plot's list of eaters:
+            pick whether to move or reproduce
+            adjust eater/plant list accordingly
 
 Metrics to keep track of
 - Average eater health at end of season
