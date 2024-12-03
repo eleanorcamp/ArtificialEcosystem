@@ -1,5 +1,6 @@
 from typing import List
 import numpy as np
+import random
 
 
 class Eater:
@@ -33,3 +34,29 @@ class Plot:
         self.eaters: List[Eater] = list()
         self.plants: List[Plant] = list()
         self.size: int = size
+
+    def add_plants(self, num_plants: int = 100):
+        plants_added: int = 0
+        while plants_added < num_plants:
+            x = random.randint(0, self.size - 1)
+            y = random.randint(0, self.size - 1)
+            if self.grid[x][y] == 0:
+                self.grid[x][y] = 1
+                self.plants.append( Plant(x, y) )
+                plants_added += 1
+
+    def add_eaters(self, num_eaters: int = 10):
+        eaters_added: int = 0
+        while eaters_added < num_eaters:
+            x = random.randint(0, self.size - 1)
+            y = random.randint(0, self.size - 1)
+            if self.grid[x][y] == 0:
+                self.grid[x][y] = 2
+                self.eaters.append( Eater(x, y) )
+                eaters_added += 1
+
+    def increase_ages(self):
+        for eater in self.eaters:
+            eater.inc_age()
+        for plant in self.plants:
+            plant.inc_age()

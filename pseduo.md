@@ -3,7 +3,7 @@ Problem statement:
 Simulate some version of a simple artificial ecosystem. As an example:
 
 Artificial life simulation 
-Everything takes place in a 100 meter by 100 meter square
+Everything takes place in a 100-meter by 100-meter square
 
 Laws of physics: each season enough sunlight falls for exactly 100 new 
 plants to grow, randomly distributed.
