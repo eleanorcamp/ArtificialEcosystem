@@ -2,7 +2,7 @@ from Organisms import *
 import random
 from typing import List
 import math
-# import numpy as np
+import numpy as np
 
 
 
@@ -36,7 +36,7 @@ def check_valid_coords(loc: np.ndarray):
     if   y > 100: y = 100
     elif y < 0:   y = 0
 
-    return (x,y)
+    return x,y
 
 
 
@@ -67,75 +67,73 @@ def get_direction(origin, destination):
     # print(compass_brackets)
     return compass_brackets[compass_lookup]
 
-def move_eater(eater: Eater, direction: tuple):
+def get_closest_plant(eater: Eater, plants: List):
+    min_dist = float('inf')
+    closest_plant = None
+    for plant in plants:
+        dist = get_distance(eater.location, plant.location)
+        if dist < min_dist:
+            min_dist = dist
+            closest_plant = plant
+    return closest_plant
+
+def move_eater(plot: Plot, eater: Eater, direction: tuple):
+    # grab values of previous eater location and set it to 0
+    old_x,old_y = eater.location
+    plot.grid[old_x][old_y] = 0
+
+    # calculate new location and validate it
     new_loc: np.ndarray = np.add(eater.location, direction)
     loc: tuple = check_valid_coords(new_loc)
     eater.location = loc
 
+    # update plot.grid status
+    new_x, new_y = eater.location
+    plot.grid[new_x][new_y] = 2
+
 # simulation functions
 def sim_period(plot: Plot):
     # DEBUGGING
+    """
     for eater in plot.eaters:
-        print(f"Eater currently at {eater.location}")
+        print(f" Eater currently at {eater.location} ")
     for plant in plot.plants:
         print(f"Plant currently at {plant.location}")
-
+    """
 
     # initial decision of "move or stay to mate"
     for eater in plot.eaters:
         mating_focus: int = eater.genes["mating_focus"]
         task_option: str = random.choices(["mate", "move"],
                                           weights=[mating_focus, 1 - mating_focus], k=1)[0]
-        # print(f"TASK OPTION: {type(task_option)}")
+        # print(f"TASK OPTION: {type(task_option)}") # debugging
         if task_option == 'move':
             eater.state["last_decision"] = Decision.MOVE
             food_seek: float = eater.genes["food_seeking"]
             movement_choice: str = random.choices(["food", "random"],
                                                   weights=[food_seek, 1 - food_seek], k=1)[0]
             if movement_choice == "random":
-                print("RANDOM MOVING")
                 move_direction: tuple = random.choice(DIRECTIONS)
-                print(f"MOVE DIRECTION: {move_direction}")
-                # new_loc: np.ndarray = np.add(eater.location, move_direction)
-                # # make sure x and y are in range (0, 100)
-                # new_loc: tuple = check_valid_coords(new_loc)
-                # # set new eater location
-                # eater.location = new_loc
-                move_eater(eater, move_direction)
+                move_eater(plot, eater, move_direction)
             elif movement_choice == "food":
-                print("FOOD MOVING")
-                # come back and add logic to find nearest
-                # plant and move towards it
-                min_dist = float('inf')
-                closest_plant = None
-                for plant in plot.plants:
-                    dist =get_distance(eater.location, plant.location)
-                    if dist < min_dist:
-                        min_dist = dist
-                        closest_plant = plant
-                move_direction = get_direction(eater.location, plant.location)
-                print(f"MOVE DIRECTION: {move_direction}")
-                # new_loc: np.ndarray = np.add(eater.location, direction)
-                # new_loc: tuple = check_valid_coords(new_loc)
-                # eater.location = new_loc
-                move_eater(eater, move_direction)
-            print(f"Eater now at {eater.location}")
+                closest_plant = get_closest_plant(eater, plot.plants)
+                move_direction = get_direction(eater.location, closest_plant.location)
+                move_eater(plot, eater, move_direction)
+            # print(f"Eater now at {eater.location}") # debugging
 
         elif task_option == "mate":
             eater.state["last_decision"] = Decision.MATE
 
     # go through eaters again to determine eating or mating status
     for eater in plot.eaters:
-        if eater.state["last_decision"] == "move":
+        if eater.state["last_decision"] == Decision.MOVE:
             print("EATER STATE MOVE")
             # add logic to (hopefully) eat
             strength: int = eater.genes["strength"]
-            # continue
-        elif eater.state["last_decision"] == "mate":
+        elif eater.state["last_decision"] == Decision.MATE:
             print("EATER STATE MATE")
             # add logic to (hopefully) mate
             mating_score: int = eater.genes["mating_score"]
-            # continue
 
 
 def sim_season(plot: Plot, periods: int = 100):
@@ -167,4 +165,5 @@ def main():
     # print_eaters(plot)
     # print_plants(plot)
 
-main()
+if __name__ == "__main__":
+    main()
