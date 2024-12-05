@@ -1,14 +1,16 @@
-from typing import List
+from typing import List, Dict
 import numpy as np
 import random
 
 
 class Eater:
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int, genes: Dict):
         self.genes: List = []
         self.energy: int = 0
         self.age: int = 0
         self.location = (x, y)
+        self.genes = genes
+        self.sex = random.choice(["male", "female"])
 
         self.plants_eaten: int = 0
         self.distance_covered: int = 0
@@ -52,7 +54,11 @@ class Plot:
             y = random.randint(0, self.size - 1)
             if self.grid[x][y] == 0:
                 self.grid[x][y] = 2
-                self.eaters.append( Eater(x, y) )
+                this_gene = {"food_seeking": random.random(),
+                             "strength": random.randint(1, 20),
+                             "mating_score": random.randint(1, 20),
+                             "mating_focus": 0}
+                self.eaters.append( Eater(x, y, this_gene) )
                 eaters_added += 1
 
     def increase_ages(self):

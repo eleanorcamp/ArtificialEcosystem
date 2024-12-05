@@ -33,10 +33,15 @@ What we'll need:
 
     Eater class
         - 4 genes
-            1. dictates movement
-            2. dictates reproduction
-            3. not sure yet
-            4. not sure yet
+            1. likelihood of moving towards food
+                    gene is random number 0-1
+                    if random() < gene: move toards food, else random
+            2. 'strength' measure (when two eaters get to the same plant)
+                    greater strength eats, other goes hunger
+            3. attractiveness measure
+                  male's need to have a certain score to mate with certain females
+            4. reproduction interest
+                  depending on age, an eater will care more about eating/reproducing
         - energy 'meter'
         - age count
 
