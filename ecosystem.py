@@ -138,6 +138,12 @@ def get_neighbor_indices(arr: List, i: int, j: int):
     # Returning the vector
     return v
 
+def get_eater_from_loc(arr: list[Eater], loc: tuple):
+    for eater in arr:
+        # print(f"LOC: {loc}\tEATER_LOC: {eater.location}")
+        if eater.location == loc:
+            return eater
+    return None
 
 def sim_period(plot: Plot):
     for eater in plot.eaters:
@@ -160,8 +166,15 @@ def sim_period(plot: Plot):
                 potential_mates_locations: list = get_neighbor_indices(plot.grid, eater_x, eater_y)
                 if eater.sex == "female":
                     for point in potential_mates_locations:
-
-                        p = 0
+                        # potential mate location
+                        pm = get_eater_from_loc(plot.eaters, point)
+                        if pm is None: continue
+                        print(f"POINT IS: {point}\tPM IS AT: {pm.location}")
+                        if eater.sex != pm.sex:
+                            print("DIFF SEX")
+                        else:
+                            print("SAME SEX")
+                        print(f"EATER: {eater.sex}, PM_S: {pm.sex}")
                 elif eater.sex == "male":
                     print("PPPP MALE")
 
