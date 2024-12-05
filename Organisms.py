@@ -2,6 +2,7 @@ from typing import List, Dict
 from enum import Enum
 import numpy as np
 import random
+from math import dist
 
 class Decision(Enum):
     MOVE = "move"

@@ -8,7 +8,7 @@ import numpy as np
 
 # helper functions
 def get_distance(point1, point2):
-    return math.sqrt(((point1[0] - point2[0]) ** 2) + ((point1[1] - point2[1]) ** 2))
+    return math.dist(point1,point2)
 
 def get_eater_eng(eaters: List[Eater]):
     eng_sum: float = 0
@@ -68,12 +68,12 @@ def get_direction(origin, destination):
     return compass_brackets[compass_lookup]
 
 def get_closest_plant(eater: Eater, plants: List):
-    min_dist = float('inf')
+    min_dist: float = float('inf')
     closest_plant = None
     for plant in plants:
-        dist = get_distance(eater.location, plant.location)
-        if dist < min_dist:
-            min_dist = dist
+        this_dist: float = get_distance(eater.location, plant.location)
+        if this_dist < min_dist:
+            min_dist: float = this_dist
             closest_plant = plant
     return closest_plant
 
@@ -90,6 +90,31 @@ def move_eater(plot: Plot, eater: Eater, direction: tuple):
     # update plot.grid status
     new_x, new_y = eater.location
     plot.grid[new_x][new_y] = 2
+
+def is_valid_index(i: int, j: int, n: int, m: int):
+    return not (i < 0 or j < 0 or i > n - 1 or j > m - 1)
+def get_neighbors(arr: List, i: int, j: int):
+    # Size of given 2d array
+    n: int = len(arr)
+    m: int  = len(arr[0])
+
+    # Initialising a vector array
+    # where adjacent element will be stored
+    v: List = []
+
+    # Checking for all the possible adjacent positions
+    if is_valid_index(i - 1, j - 1, n, m):   v.append(arr[i - 1][j - 1])
+    if is_valid_index(i - 1, j,     n, m):   v.append(arr[i - 1][j])
+    if is_valid_index(i - 1, j + 1, n, m):   v.append(arr[i - 1][j + 1])
+    if is_valid_index(i,     j - 1, n, m):   v.append(arr[i][j - 1])
+    if is_valid_index(i,     j + 1, n, m):   v.append(arr[i][j + 1])
+    if is_valid_index(i + 1, j - 1, n, m):   v.append(arr[i + 1][j - 1])
+    if is_valid_index(i + 1, j,     n, m):   v.append(arr[i + 1][j])
+    if is_valid_index(i + 1, j + 1, n, m):   v.append(arr[i + 1][j + 1])
+
+    # Returning the vector
+    return v
+
 
 # simulation functions
 def sim_period(plot: Plot):
@@ -124,12 +149,19 @@ def sim_period(plot: Plot):
         elif task_option == "mate":
             eater.state["last_decision"] = Decision.MATE
 
+    # go through plot, attempt to feed/mate all eaters
+    for i in range( len(plot.grid) ):
+        for j in range( len(i) ):
+            neighbors = get_neighbors(i, j)
+
     # go through eaters again to determine eating or mating status
     for eater in plot.eaters:
+        # try to eat for every eater that moved
         if eater.state["last_decision"] == Decision.MOVE:
             print("EATER STATE MOVE")
-            # add logic to (hopefully) eat
             strength: int = eater.genes["strength"]
+
+
         elif eater.state["last_decision"] == Decision.MATE:
             print("EATER STATE MATE")
             # add logic to (hopefully) mate
