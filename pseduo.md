@@ -1,22 +1,23 @@
 Problem statement:
 
-Simulate some version of a simple artificial ecosystem. As an example:
+# Simulate some version of a simple artificial ecosystem. 
+As an example:
 
-Artificial life simulation 
-Everything takes place in a 100-meter by 100-meter square
+## Artificial life simulation 
+* Everything takes place in a 100-meter by 100-meter square
 
-Laws of physics: each season enough sunlight falls for exactly 100 new 
+* *Laws of physics*: each season enough sunlight falls for exactly 100 new 
 plants to grow, randomly distributed.
 
-There is space for 1000 eaters. An eater coming within 2 m of a plant eats 
+* There is space for 1000 eaters. An eater coming within 2 m of a plant eats 
 it all and gets 100 cal of energy. The most an eater can store is 200 cal. 
 It takes 1 cal to move 2 m and 20 to have an offspring. 
 Eaters live at most 20 seasons.
 
-Invent a 4 gene eater in which the genes code for movement and reproduction
+* Invent a 4 gene eater in which the genes code for movement and reproduction
 control. 
-Simulate 100 time periods per season. 
-In one time period an eater can move and eat or reproduce.
+* Simulate 100 time periods per season. 
+  * In one time period an eater can move and eat or reproduce.
 
 
 Questions from problem statement:
