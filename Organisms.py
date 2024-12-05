@@ -1,7 +1,11 @@
 from typing import List, Dict
+from enum import Enum
 import numpy as np
 import random
 
+class Decision(Enum):
+    MOVE = "move"
+    MATE = "mate"
 
 class Eater:
     def __init__(self, x: int, y: int, genes: Dict):
@@ -9,8 +13,12 @@ class Eater:
         self.energy: int = 0
         self.age: int = 0
         self.location = (x, y)
-        self.genes = genes
-        self.sex = random.choice(["male", "female"])
+        self.genes: Dict = genes
+        self.sex: str = random.choice(["male", "female"])
+        self.state: Dict = {
+                        "last_decision": None,
+
+        }
 
         self.plants_eaten: int = 0
         self.distance_covered: int = 0
