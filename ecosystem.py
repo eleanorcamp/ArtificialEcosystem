@@ -23,21 +23,31 @@ def print_plants(plot: Plot):
 # simulation functions
 def sim_period(plot: Plot):
     for eater in plot.eaters:
+        mating_focus: int = eater.genes["mating_focus"]
+        task_option: str = random.choices(["reproduce", "move"],
+                                          weights=[mating_focus, 1 - mating_focus])
+        if task_option == "move":
+            food_seek: float = eater.genes["food_seeking"]
+            movement_choice: str = random.choices(["food", "random"],
+                                                  weights=[food_seek, 1 - food_seek])
+
+
+
+    for eater in plot.eaters:
         # gather variables from eater
-        food_seek: float = eater.genes["food_seeking"]
+        # food_seek: float = eater.genes["food_seeking"]
         strength: int = eater.genes["strength"]
         mating_score: int = eater.genes["mating_score"]
-        mating_focus: int = eater.genes["mating_focus"]
+        # mating_focus: int = eater.genes["mating_focus"]
         current_location: tuple = eater.location
 
         # determine eater's preferred choice
-        task_option: str = random.choices(["reproduce", "move"],
-                                         weights = [mating_focus, 1-mating_focus])
+        # task_option: str = random.choices(["reproduce", "move"],
+        #                                  weights = [mating_focus, 1-mating_focus])
 
         if task_option == "move":
             plant_nearby: bool = False
-            movement_choice: str = random.choices(["food", "random"],
-                                             weights = [food_seek, 1-food_seek])
+
 
 
         # print(f"Eater with food_seek: {mating_focus} has chosen: {task_option}")
