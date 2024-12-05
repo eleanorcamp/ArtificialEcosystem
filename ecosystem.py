@@ -116,8 +116,61 @@ def get_neighbors(arr: List, i: int, j: int):
     return v
 
 
-# simulation functions
+def get_neighbor_indices(arr: List, i: int, j: int):
+    # Size of given 2d array
+    n: int = len(arr)
+    m: int  = len(arr[0])
+
+    # Initialising a vector array
+    # where adjacent element will be stored
+    v: List = []
+
+    # Checking for all the possible adjacent positions
+    if is_valid_index(i - 1, j - 1, n, m):   v.append( (i-1, j-1) )
+    if is_valid_index(i - 1, j,     n, m):   v.append( (i-1, j  ) )
+    if is_valid_index(i - 1, j + 1, n, m):   v.append( (i-1, j+1) )
+    if is_valid_index(i,     j - 1, n, m):   v.append( (i,   j-1) )
+    if is_valid_index(i,     j + 1, n, m):   v.append( (i,   j+1) )
+    if is_valid_index(i + 1, j - 1, n, m):   v.append( (i+1, j-1) )
+    if is_valid_index(i + 1, j,     n, m):   v.append( (i+1, j  ) )
+    if is_valid_index(i + 1, j + 1, n, m):   v.append( (i+1, j+1) )
+
+    # Returning the vector
+    return v
+
+
 def sim_period(plot: Plot):
+    for eater in plot.eaters:
+        # if eater.state["last_mated"] > 25:
+        mating_focus: int = eater.genes["mating_focus"]
+        task_option: str = random.choices(["mate", "move"],
+                                          weights=[1-mating_focus, mating_focus], k=1)[0]
+        # print(f"TASK: {task_option}")
+        if task_option == "mate":
+            eater_x: int = eater.location[0]
+            eater_y: int = eater.location[1]
+            # eater.state["last_decision"] = Decision.MATE
+            loc: tuple = eater.location
+            eater_neighbors: list = get_neighbors( plot.grid, eater.location[0], eater.location[1] )
+            if 2 not in eater_neighbors:
+                # handle the food/random movement
+                continue
+            else:
+                eater_mate_score: int = eater.genes["mating_score"]
+                potential_mates_locations: list = get_neighbor_indices(plot.grid, eater_x, eater_y)
+                if eater.sex == "female":
+                    for point in potential_mates_locations:
+
+                        p = 0
+                elif eater.sex == "male":
+                    print("PPPP MALE")
+
+
+
+
+
+# simulation functions
+def sim_period_beta(plot: Plot):
     # DEBUGGING
     """
     for eater in plot.eaters:
@@ -151,8 +204,12 @@ def sim_period(plot: Plot):
 
     # go through plot, attempt to feed/mate all eaters
     for i in range( len(plot.grid) ):
-        for j in range( len(i) ):
-            neighbors = get_neighbors(i, j)
+        for j in range( len(plot.grid[i]) ):
+            # if there is a plant at the current index
+            # we check it for neighboring eaters
+            if plot.grid[i][j] == 1:
+                neighbors = get_neighbor_indices(plot.grid, i, j)
+
 
     # go through eaters again to determine eating or mating status
     for eater in plot.eaters:
@@ -191,7 +248,7 @@ def main():
     # print("Main")
 
     plot_size: int = 100
-    plot = setup_plot(plot_size, 1, 1)
+    plot = setup_plot(plot_size, 1, 100)
     sim_period(plot)
 
     # print_eaters(plot)
