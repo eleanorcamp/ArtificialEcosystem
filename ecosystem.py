@@ -147,6 +147,7 @@ def get_eater_from_loc(arr: list[Eater], loc: tuple):
 
 def sim_period(plot: Plot):
     for eater in plot.eaters:
+
         if eater.state["last_mated"] > 25:
 
             mating_focus: int = eater.genes["mating_focus"]
@@ -174,8 +175,7 @@ def sim_period(plot: Plot):
                     potential_mates: List[Eater] = []
                     for point in potential_mates_locations:
                         potential_mate = get_eater_from_loc(plot.eaters, point)
-                        if potential_mate is None: continue
-                        potential_mates.append(potential_mate)
+                        if potential_mate: potential_mates.append(potential_mate)
 
                     # go through potential mates to (hopefully) find a pair
                     for pm in potential_mates:
