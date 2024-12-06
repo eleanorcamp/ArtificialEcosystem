@@ -19,7 +19,8 @@ class Eater:
         self.state: Dict = {
                         "last_decision": None,
                         "eaten": None,
-                        "last_mated": 0
+                        "last_mated": 40,
+                        "debugging": None
         }
 
         self.plants_eaten: int = 0

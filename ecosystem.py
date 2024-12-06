@@ -147,37 +147,63 @@ def get_eater_from_loc(arr: list[Eater], loc: tuple):
 
 def sim_period(plot: Plot):
     for eater in plot.eaters:
-        # if eater.state["last_mated"] > 25:
-        mating_focus: int = eater.genes["mating_focus"]
-        task_option: str = random.choices(["mate", "move"],
-                                          weights=[1-mating_focus, mating_focus], k=1)[0]
-        # print(f"TASK: {task_option}")
-        if task_option == "mate":
-            eater_x: int = eater.location[0]
-            eater_y: int = eater.location[1]
-            # eater.state["last_decision"] = Decision.MATE
-            loc: tuple = eater.location
-            eater_neighbors: list = get_neighbors( plot.grid, eater.location[0], eater.location[1] )
-            if 2 not in eater_neighbors:
-                # handle the food/random movement
-                continue
-            else:
-                eater_mate_score: int = eater.genes["mating_score"]
-                potential_mates_locations: list = get_neighbor_indices(plot.grid, eater_x, eater_y)
-                if eater.sex == "female":
-                    for point in potential_mates_locations:
-                        # potential mate location
-                        pm = get_eater_from_loc(plot.eaters, point)
-                        if pm is None: continue
-                        print(f"POINT IS: {point}\tPM IS AT: {pm.location}")
-                        if eater.sex != pm.sex:
-                            print("DIFF SEX")
-                        else:
-                            print("SAME SEX")
-                        print(f"EATER: {eater.sex}, PM_S: {pm.sex}")
-                elif eater.sex == "male":
-                    print("PPPP MALE")
+        if eater.state["last_mated"] > 25:
 
+            mating_focus: int = eater.genes["mating_focus"]
+            task_option: str = random.choices(["mate", "move"],
+                                              weights=[1-mating_focus, mating_focus], k=1)[0]
+            # print(f"TASK: {task_option}")
+            if task_option == "mate":
+
+                eater_x: int = eater.location[0]
+                eater_y: int = eater.location[1]
+                # eater.state["last_decision"] = Decision.MATE
+                loc: tuple = eater.location
+                eater_neighbors: list = get_neighbors( plot.grid, eater.location[0], eater.location[1] )
+                if 2 not in eater_neighbors:
+                    # handle the food/random movement
+                    eater.state["last_mated"] += 1
+                    continue
+                else:
+                    eater.state["debugging"] = "IN THE LOOP"
+                    eater_mate_score: int = eater.genes["mating_score"]
+                    # find locations of potential mates
+                    potential_mates_locations: List[tuple] = get_neighbor_indices(plot.grid, eater_x, eater_y)
+
+                    # make a list of potential mates from those locations
+                    potential_mates: List[Eater] = []
+                    for point in potential_mates_locations:
+                        potential_mate = get_eater_from_loc(plot.eaters, point)
+                        if potential_mate is None: continue
+                        potential_mates.append(potential_mate)
+
+                    # go through potential mates to (hopefully) find a pair
+                    for pm in potential_mates:
+                        # if two eaters are same sex go to the next potential_mate
+                        if eater.sex == pm.sex:
+                            continue
+                        # if eater mating_score is too low go to the next
+                        if eater.sex == "male" and eater_mate_score < pm.genes["mating_score"]:
+                            continue
+                        # if potential mate mating_score is too low go to the next
+                        if eater.sex == "female" and eater_mate_score > pm.genes["mating_score"]:
+                            continue
+                        else:
+                            print(f"{eater.sex.upper()}: {eater_mate_score}  AND "
+                                  f"{pm.sex} potential mate: {pm.genes["mating_score"]}")
+                            # reset eaters' last_mated
+                            eater.state["last_mated"] = 0
+                            pm.state["last_mated"] = 0
+                            # add child eater to random spot
+                            plot.add_eaters(1)
+                            # print("WE HAVE A MATE")
+                            break
+                    # not exactly sure what type of eater is being left
+                    # in this section, but it needs to have it's last_mated incremented
+                    eater.state["debugging"] = "left behind?"
+                    if eater.state["last_mated"] > 0: eater.state["last_mated"] += 1
+    for eater in plot.eaters:
+        print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
 
 
 
