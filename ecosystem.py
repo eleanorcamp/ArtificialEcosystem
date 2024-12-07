@@ -147,7 +147,6 @@ def get_eater_from_loc(arr: list[Eater], loc: tuple):
 
 def sim_period(plot: Plot):
     for eater in plot.eaters:
-        # THIS IS IN MAIN
 
         if eater.state["last_mated"] > 25:
 
