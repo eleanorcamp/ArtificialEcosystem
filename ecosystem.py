@@ -160,13 +160,9 @@ def sim_period(plot: Plot):
                 eater_x: int = eater.location[0]
                 eater_y: int = eater.location[1]
                 # eater.state["last_decision"] = Decision.MATE
-                loc: tuple = eater.location
                 eater_neighbors: list = get_neighbors( plot.grid, eater.location[0], eater.location[1] )
-                if 2 not in eater_neighbors:
-                    # handle the food/random movement
-                    eater.state["last_mated"] += 1
-                    continue
-                else:
+                # if this eater has other eaters in its surrounding area
+                if 2 in eater_neighbors:
                     eater.state["debugging"] = "IN THE LOOP"
                     eater_mate_score: int = eater.genes["mating_score"]
                     # find locations of potential mates
@@ -203,8 +199,15 @@ def sim_period(plot: Plot):
                     # in this section, but it needs to have it's last_mated incremented
                     eater.state["debugging"] = "left behind?"
                     if eater.state["last_mated"] > 0: eater.state["last_mated"] += 1
+                else:
+                    # handle the food/random movement
+                    eater.state["last_mated"] += 1
+                    continue
+    nums = set()
     for eater in plot.eaters:
-        print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
+        nums.add(eater.state["last_mated"])
+        # print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
+    print(nums)
 
 
 
