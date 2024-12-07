@@ -146,9 +146,12 @@ def get_eater_from_loc(arr: list[Eater], loc: tuple):
     return None
 
 def sim_period(plot: Plot):
+    new_eaters: int = 0
     for eater in plot.eaters:
-
+        # eater.state["last_mated"] += 1
         if eater.state["last_mated"] > 25:
+            # print("I shouldn't be here")
+
 
             mating_focus: int = eater.genes["mating_focus"]
             task_option: str = random.choices(["mate", "move"],
@@ -187,26 +190,59 @@ def sim_period(plot: Plot):
                         else:
                             print(f"{eater.sex.upper()}: {eater_mate_score}  AND "
                                   f"{pm.sex} potential mate: {pm.genes["mating_score"]}")
+                            print(f"BEFORE UPDATE:  {eater.state["last_mated"]}")
                             # reset eaters' last_mated
                             eater.state["last_mated"] = 0
                             pm.state["last_mated"] = 0
+                            print(f"AFTER UPDATE:  {eater.state["last_mated"]}\n")
+
+                            eater.state["last_decision"] = Decision.MATE
+                            pm.state["last_decision"] = Decision.MATE
                             # add child eater to random spot
-                            plot.add_eaters(1)
+
+                            # plot.add_eaters(1)
+                            # keep track of how many new eaters we need to add
+                            # at the end of the period
+                            new_eaters += 1
                             # print("WE HAVE A MATE")
                             break
-                    # not exactly sure what type of eater is being left
-                    # in this section, but it needs to have it's last_mated incremented
-                    eater.state["debugging"] = "left behind?"
-                    if eater.state["last_mated"] > 0: eater.state["last_mated"] += 1
-                else:
-                    # handle the food/random movement
-                    eater.state["last_mated"] += 1
+                    # after an eater has successfully mated, go to the next one
+                    if eater.state["last_decision"] == Decision.MATE: continue
+
+                    # Update the eaters that tried to mate but could not
+                    eater.state["debugging"] = "unsuccessful mate"
+                    eater.state["last_decision"] = Decision.FAILED_MATE
+                    print("unsuccessful mate")
+                    # update the last_mated count and move to next eater in plot
+                    if eater.state["last_decision"] == Decision.FAILED_MATE: eater.state["last_mated"] += 1
+                    # if eater.state["last_mated"] > 0: eater.state["last_mated"] += 1
                     continue
+        # else:
+
+        # getting to this point is all the eaters that did not want to mate
+        # handle the food/random movement
+        if eater.state["last_decision"] != Decision.MATE:
+            eater.state["last_decision"] = Decision.MOVE
+            eater.state["last_mated"] += 1
+            # get choice of random movement or food movement
+            food_seeking = eater.genes["food_seeking"]
+            move_option: str = random.choices(["food", "random"],
+                                              weights=[food_seeking, 1-food_seeking], k=1)[0]
+            if move_option == "food":
+                closest_plant = get_closest_plant(eater, plot.plants)
+                move_direction = get_direction(eater.location, closest_plant.location)
+                move_eater(plot, eater, move_direction)
+            if move_option == "random":
+                move_eater(plot, eater, random.choice(DIRECTIONS))
+
+
+
     nums = set()
     for eater in plot.eaters:
         nums.add(eater.state["last_mated"])
         # print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
     print(nums)
+    plot.add_eaters(new_eaters)
 
 
 

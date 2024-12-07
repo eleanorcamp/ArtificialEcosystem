@@ -7,6 +7,7 @@ from math import dist
 class Decision(Enum):
     MOVE = "move"
     MATE = "mate"
+    FAILED_MATE = "failed_mate"
 
 class Eater:
     def __init__(self, x: int, y: int, genes: Dict):
