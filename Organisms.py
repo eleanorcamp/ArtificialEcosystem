@@ -11,7 +11,7 @@ class Decision(Enum):
 
 class Eater:
     def __init__(self, x: int, y: int, genes: Dict):
-        self.genes: list = []
+        self.genes: list = [] # food_seeking, strength, mating_score, mating_focus
         self.energy: int = 0
         self.age: int = 0
         self.location = (x, y)

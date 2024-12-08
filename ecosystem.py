@@ -30,10 +30,10 @@ def check_valid_coords(loc: np.ndarray):
     x = loc[0]
     y = loc[1]
 
-    if   x > 100: x = 100
+    if   x > 99: x = 99
     elif x < 0:   x = 0
 
-    if   y > 100: y = 100
+    if   y > 99: y = 99
     elif y < 0:   y = 0
 
     return x,y
@@ -138,16 +138,18 @@ def get_neighbor_indices(arr: List, i: int, j: int):
     # Returning the vector
     return v
 
-def get_eater_from_loc(arr: list[Eater], loc: tuple):
-    for eater in arr:
+def get_item_from_loc(arr: list, loc: tuple):
+    for item in arr:
         # print(f"LOC: {loc}\tEATER_LOC: {eater.location}")
-        if eater.location == loc:
-            return eater
+        if item.location == loc:
+            return item
     return None
 
 def sim_period(plot: Plot):
     new_eaters: int = 0
     for eater in plot.eaters:
+        eater_x: int = eater.location[0]
+        eater_y: int = eater.location[1]
         # eater.state["last_mated"] += 1
         if eater.state["last_mated"] > 25:
             # print("I shouldn't be here")
@@ -155,7 +157,7 @@ def sim_period(plot: Plot):
 
             mating_focus: int = eater.genes["mating_focus"]
             task_option: str = random.choices(["mate", "move"],
-                                              weights=[1-mating_focus, mating_focus], k=1)[0]
+                                              weights=[mating_focus, 1-mating_focus], k=1)[0]
             # print(f"TASK: {task_option}")
             if task_option == "mate":
 
@@ -173,7 +175,7 @@ def sim_period(plot: Plot):
                     # make a list of potential mates from those locations
                     potential_mates: List[Eater] = []
                     for point in potential_mates_locations:
-                        potential_mate = get_eater_from_loc(plot.eaters, point)
+                        potential_mate = get_item_from_loc(plot.eaters, point)
                         if potential_mate: potential_mates.append(potential_mate)
 
                     # go through potential mates to (hopefully) find a pair
@@ -234,6 +236,21 @@ def sim_period(plot: Plot):
                 move_eater(plot, eater, move_direction)
             if move_option == "random":
                 move_eater(plot, eater, random.choice(DIRECTIONS))
+            # after moving the eater check for plants and try to eat
+            eater_neighbors: list = get_neighbors(plot.grid, eater.location[0], eater.location[1])
+            if 1 in eater_neighbors:
+                potential_plant_locations: List[tuple] = get_neighbor_indices(plot.grid, eater_x, eater_y)
+                potential_plants: List[Plant] = []
+                for point in potential_plant_locations:
+                    potential_plant = get_item_from_loc(plot.plants, point)
+                    if potential_plant: potential_plants.append(potential_plant)
+
+                for plant in potential_plants:
+                    continue
+                    # attempt to eat the plant
+
+
+
 
 
 
