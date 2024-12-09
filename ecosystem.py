@@ -91,6 +91,8 @@ def move_eater(plot: Plot, eater: Eater, direction: tuple):
     new_x, new_y = eater.location
     plot.grid[new_x][new_y] = 2
 
+    eater.energy -= 2
+
 def is_valid_index(i: int, j: int, n: int, m: int):
     return not (i < 0 or j < 0 or i > n - 1 or j > m - 1)
 def get_neighbors(arr: List, i: int, j: int):
@@ -145,7 +147,33 @@ def get_item_from_loc(arr: list, loc: tuple):
             return item
     return None
 
+def attempt_eat(plot: Plot, plant: Plant, eater: Eater):
+    # print("ATTEMPTED")
+    plant_neighbors = get_neighbors(plot.grid, plant.location[0], plant.location[1])
+    num_eaters = plant_neighbors.count(2)
+    if num_eaters == 1:
+        return True
+    elif num_eaters > 1:
+        eater_neighbors: list = []
+        eater_neighbor_locs = get_neighbor_indices(plot.grid, plant.location[0], plant.location[1])
+        for loc in eater_neighbor_locs:
+            neighbor = get_item_from_loc(plot.eaters, loc)
+            if neighbor: eater_neighbors.append(neighbor)
+
+        for neighbor in eater_neighbors:
+            if neighbor.genes["strength"] > eater.genes["strength"]:
+                return False
+    return True
+
+def eat_plant(plot: Plot, plant: Plant, eater: Eater):
+    plant_loc = plant.location
+    plot.grid[plant_loc[0], plant_loc[1]] = 0
+    eater.energy += 100
+    plot.plants.remove(plant)
+    print("ATE A PLANT")
+
 def sim_period(plot: Plot):
+    print_plants(plot.plants)
     new_eaters: int = 0
     for eater in plot.eaters:
         eater_x: int = eater.location[0]
@@ -239,15 +267,21 @@ def sim_period(plot: Plot):
             # after moving the eater check for plants and try to eat
             eater_neighbors: list = get_neighbors(plot.grid, eater.location[0], eater.location[1])
             if 1 in eater_neighbors:
+
                 potential_plant_locations: List[tuple] = get_neighbor_indices(plot.grid, eater_x, eater_y)
                 potential_plants: List[Plant] = []
                 for point in potential_plant_locations:
+
                     potential_plant = get_item_from_loc(plot.plants, point)
-                    if potential_plant: potential_plants.append(potential_plant)
+                    # print(potential_plant)
+                    # p
+                    if potential_plant:
+                        # print("POTENTIAL")
+                        potential_plants.append(potential_plant)
 
                 for plant in potential_plants:
-                    continue
-                    # attempt to eat the plant
+                    if attempt_eat(plot, plant, eater):
+                        eat_plant(plot, plant, eater)
 
 
 
@@ -258,7 +292,7 @@ def sim_period(plot: Plot):
     for eater in plot.eaters:
         nums.add(eater.state["last_mated"])
         # print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
-    print(nums)
+    print(f"list of days since mated: {nums}")
     plot.add_eaters(new_eaters)
 
 
@@ -339,12 +373,29 @@ def setup_plot(size: int = 100, plant_count: int = 100, eater_count: int = 25):
     plot.add_eaters(eater_count)
     return plot
 
+def print_plants(plants: list):
+    s = set()
+    for p in plants:
+        s.add(type(p))
+    print(s)
+
 def main():
     # print("Main")
 
     plot_size: int = 100
-    plot = setup_plot(plot_size, 1, 100)
-    sim_period(plot)
+    plot = setup_plot(plot_size, 100, 100)
+    for i in range(5):
+
+        sim_period(plot)
+
+    # sim_period(plot)
+
+    energies = set()
+
+    for e in plot.eaters:
+        energies.add(e.energy)
+
+    print(f"list of energies: {energies}")
 
     # print_eaters(plot)
     # print_plants(plot)

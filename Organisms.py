@@ -12,7 +12,7 @@ class Decision(Enum):
 class Eater:
     def __init__(self, x: int, y: int, genes: Dict):
         self.genes: list = [] # food_seeking, strength, mating_score, mating_focus
-        self.energy: int = 0
+        self.energy: int = 50
         self.age: int = 0
         self.location = (x, y)
         self.genes: Dict = genes
@@ -20,7 +20,7 @@ class Eater:
         self.state: Dict = {
                         "last_decision": None,
                         "eaten": None,
-                        "last_mated": 40,
+                        "last_mated": 0,
                         "debugging": None
         }
 
