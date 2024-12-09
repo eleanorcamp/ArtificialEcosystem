@@ -257,7 +257,11 @@ def sim_period_beta(plot: Plot):
         # log_eater_state(eater)
 
         # Handle mating
-        if eater.genes["mating_focus"] > random.random():
+        mating_focus: int = eater.genes["mating_focus"]
+        task_option: str = random.choices(["mate", "move"],
+                                          weights=[mating_focus, 1 - mating_focus], k=1)[0]
+        # if eater.genes["mating_focus"] > random.random():
+        if task_option == "mate":
             if eater.state["last_mated"] > 25:
                 if attempt_to_mate(plot, eater):
                     new_eaters += 1
@@ -464,11 +468,11 @@ def main():
 
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 100)
-    display_plot(plot)
+    # display_plot(plot)
     for i in range(50):
 
-        # sim_period_beta(plot)
-        sim_period(plot)
+        sim_period_beta(plot)
+        # sim_period(plot)
 
     # sim_period(plot)
 
@@ -494,7 +498,7 @@ def main():
     # print_eaters(plot)
     # print_plants(plot)
     # adding some comments here to test
-    display_plot(plot)
+    # display_plot(plot)
 
 if __name__ == "__main__":
     main()
