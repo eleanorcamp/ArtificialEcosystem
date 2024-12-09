@@ -3,6 +3,7 @@ import random
 from typing import List
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 
@@ -256,21 +257,23 @@ def sim_period_beta(plot: Plot):
         # log_eater_state(eater)
 
         # Handle mating
-        if eater.state["last_mated"] > 25:
-            if attempt_to_mate(plot, eater):
-                new_eaters += 1
-                continue
+        if eater.genes["mating_focus"] > random.random():
+            if eater.state["last_mated"] > 25:
+                if attempt_to_mate(plot, eater):
+                    new_eaters += 1
+                    continue
 
         # Handle movement and eating
         eater.state["last_mated"] += 1
         if eater.genes["food_seeking"] > random.random():
             seek_food(plot, eater)
         else:
-            random_move(plot, eater)
-
+            # random_move(plot, eater)
+            move_eater(plot, eater, random.choice(DIRECTIONS))
     # Add new eaters
-    for _ in range(new_eaters):
-        plot.add_eaters(1)
+    # for _ in range(new_eaters):
+    #     plot.add_eaters(1)
+    plot.add_eaters(new_eaters)
 
 
 def sim_period(plot: Plot):
@@ -427,13 +430,44 @@ def print_plants(plants: list):
         s.add(type(p))
     print(s)
 
+
+def display_plot(plot: Plot):
+    fig, ax = plt.subplots()
+    eater_x = [e.location[0] for e in plot.eaters]
+    eater_y = [e.location[1] for e in plot.eaters]
+    plant_x = [p.location[0] for p in plot.plants]
+    plant_y = [p.location[1] for p in plot.plants]
+
+
+
+    # Plot the grid
+    ax.scatter(eater_x, eater_y, color='red', label="Eaters", edgecolor='black', alpha=0.7)
+    ax.scatter(plant_x, plant_y, color='green', label="Plants", edgecolor='black', alpha=0.7)
+
+    # Set the limits of the plot
+    ax.set_xlim(0, plot.size)
+    ax.set_ylim(0, plot.size)
+
+    ax.grid(True, which='both', axis='both', linestyle='--', alpha=0.5)
+    ax.legend(loc='upper right', bbox_to_anchor=(1.01, 1.1))
+
+    ax.figure.set_size_inches(14, 7.5)
+
+
+    # Show the plot
+    plt.show()
+
+
+
 def main():
     # print("Main")
 
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 100)
+    display_plot(plot)
     for i in range(50):
 
+        # sim_period_beta(plot)
         sim_period(plot)
 
     # sim_period(plot)
@@ -453,13 +487,14 @@ def main():
     print(f"dead count: {dead_count}")
     print(f"num_eaters: {len(plot.eaters)}")
 
-    for e in plot.eaters:
-        if e.state["wins"] > 0 or e.state["losses"] > 0:
-            print(f"Wins: {e.state["wins"]}\tLoses: {e.state["losses"]}")
+    # for e in plot.eaters:
+    #     if e.state["wins"] > 0 or e.state["losses"] > 0:
+    #         print(f"Wins: {e.state["wins"]}\tLoses: {e.state["losses"]}")
 
     # print_eaters(plot)
     # print_plants(plot)
     # adding some comments here to test
+    display_plot(plot)
 
 if __name__ == "__main__":
     main()
