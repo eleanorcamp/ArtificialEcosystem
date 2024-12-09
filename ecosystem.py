@@ -91,7 +91,9 @@ def move_eater(plot: Plot, eater: Eater, direction: tuple):
     new_x, new_y = eater.location
     plot.grid[new_x][new_y] = 2
 
-    eater.energy -= 2
+    # only decrease the energy if the eater actually moved
+    if old_x != new_x or old_y != new_y:
+        eater.energy -= 2
 
 def is_valid_index(i: int, j: int, n: int, m: int):
     return not (i < 0 or j < 0 or i > n - 1 or j > m - 1)
@@ -154,6 +156,7 @@ def attempt_eat(plot: Plot, plant: Plant, eater: Eater):
     if num_eaters == 1:
         return True
     elif num_eaters > 1:
+        print("COMPETITION")
         eater_neighbors: list = []
         eater_neighbor_locs = get_neighbor_indices(plot.grid, plant.location[0], plant.location[1])
         for loc in eater_neighbor_locs:
@@ -162,7 +165,9 @@ def attempt_eat(plot: Plot, plant: Plant, eater: Eater):
 
         for neighbor in eater_neighbors:
             if neighbor.genes["strength"] > eater.genes["strength"]:
+                print("THIS EATER LOST\n")
                 return False
+    print("THIS EATER WON\n")
     return True
 
 def eat_plant(plot: Plot, plant: Plant, eater: Eater):
@@ -170,10 +175,10 @@ def eat_plant(plot: Plot, plant: Plant, eater: Eater):
     plot.grid[plant_loc[0], plant_loc[1]] = 0
     eater.energy += 100
     plot.plants.remove(plant)
-    print("ATE A PLANT")
+    # print("ATE A PLANT")
 
 def sim_period(plot: Plot):
-    print_plants(plot.plants)
+    # print_plants(plot.plants)
     new_eaters: int = 0
     for eater in plot.eaters:
         eater_x: int = eater.location[0]
@@ -218,13 +223,13 @@ def sim_period(plot: Plot):
                         if eater.sex == "female" and eater_mate_score > pm.genes["mating_score"]:
                             continue
                         else:
-                            print(f"{eater.sex.upper()}: {eater_mate_score}  AND "
-                                  f"{pm.sex} potential mate: {pm.genes["mating_score"]}")
-                            print(f"BEFORE UPDATE:  {eater.state["last_mated"]}")
+                            # print(f"{eater.sex.upper()}: {eater_mate_score}  AND "
+                                  # f"{pm.sex} potential mate: {pm.genes["mating_score"]}")
+                            # print(f"BEFORE UPDATE:  {eater.state["last_mated"]}")
                             # reset eaters' last_mated
                             eater.state["last_mated"] = 0
                             pm.state["last_mated"] = 0
-                            print(f"AFTER UPDATE:  {eater.state["last_mated"]}\n")
+                            # print(f"AFTER UPDATE:  {eater.state["last_mated"]}\n")
 
                             eater.state["last_decision"] = Decision.MATE
                             pm.state["last_decision"] = Decision.MATE
@@ -242,7 +247,7 @@ def sim_period(plot: Plot):
                     # Update the eaters that tried to mate but could not
                     eater.state["debugging"] = "unsuccessful mate"
                     eater.state["last_decision"] = Decision.FAILED_MATE
-                    print("unsuccessful mate")
+                    # print("unsuccessful mate")
                     # update the last_mated count and move to next eater in plot
                     if eater.state["last_decision"] == Decision.FAILED_MATE: eater.state["last_mated"] += 1
                     # if eater.state["last_mated"] > 0: eater.state["last_mated"] += 1
@@ -292,7 +297,7 @@ def sim_period(plot: Plot):
     for eater in plot.eaters:
         nums.add(eater.state["last_mated"])
         # print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
-    print(f"list of days since mated: {nums}")
+    # print(f"list of days since mated: {nums}")
     plot.add_eaters(new_eaters)
 
 
@@ -384,7 +389,7 @@ def main():
 
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 100)
-    for i in range(5):
+    for i in range(50):
 
         sim_period(plot)
 
@@ -395,7 +400,14 @@ def main():
     for e in plot.eaters:
         energies.add(e.energy)
 
+    dead_count = 0
+    for e in energies:
+        if e < 0:
+            dead_count+=1
+
+
     print(f"list of energies: {energies}")
+    print(f"dead count: {dead_count}")
 
     # print_eaters(plot)
     # print_plants(plot)

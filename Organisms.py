@@ -69,7 +69,7 @@ class Plot:
                 this_gene: dict = {"food_seeking": random.random(),
                              "strength": random.randint(1, 20),
                              "mating_score": random.randint(1, 20),
-                             "mating_focus": 0}
+                             "mating_focus": 0.5}
                 self.eaters.append( Eater(x, y, this_gene) )
                 eaters_added += 1
 
