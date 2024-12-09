@@ -21,7 +21,9 @@ class Eater:
                         "last_decision": None,
                         "eaten": None,
                         "last_mated": 0,
-                        "debugging": None
+                        "debugging": None,
+                        "wins": 0,
+                        "losses": 0
         }
 
         self.plants_eaten: int = 0
