@@ -177,6 +177,46 @@ def eat_plant(plot: Plot, plant: Plant, eater: Eater):
     plot.plants.remove(plant)
     # print("ATE A PLANT")
 
+def move_eater_to_target(plot, eater, target):
+    direction = get_direction(eater.location, target.location)
+    move_eater(plot, eater, direction)
+
+def find_potential_mate(plot: Plot, eater: Eater):
+    return None
+
+def attempt_to_mate(plot: Plot, eater: Eater):
+    return None
+
+
+def seek_food(plot: Plot, eater: Eater):
+    return None
+
+def random_move(plot: Plot, eater: Eater):
+    return None
+
+
+def sim_period_beta(plot: Plot):
+    new_eaters = 0
+    for eater in plot.eaters:
+        # log_eater_state(eater)
+
+        # Handle mating
+        if eater.state["last_mated"] > 25:
+            if attempt_to_mate(eater, plot):
+                new_eaters += 1
+                continue
+
+        # Handle movement and eating
+        if eater.genes["food_seeking"] > random.random():
+            seek_food(plot, eater)
+        else:
+            random_move(plot, eater)
+
+    # Add new eaters
+    for _ in range(new_eaters):
+        plot.add_eaters(1)
+
+
 def sim_period(plot: Plot):
     # print_plants(plot.plants)
     new_eaters: int = 0
@@ -303,60 +343,7 @@ def sim_period(plot: Plot):
 
 
 
-# simulation functions
-def sim_period_beta(plot: Plot):
-    # DEBUGGING
-    """
-    for eater in plot.eaters:
-        print(f" Eater currently at {eater.location} ")
-    for plant in plot.plants:
-        print(f"Plant currently at {plant.location}")
-    """
 
-    # initial decision of "move or stay to mate"
-    for eater in plot.eaters:
-        mating_focus: int = eater.genes["mating_focus"]
-        task_option: str = random.choices(["mate", "move"],
-                                          weights=[mating_focus, 1 - mating_focus], k=1)[0]
-        # print(f"TASK OPTION: {type(task_option)}") # debugging
-        if task_option == 'move':
-            eater.state["last_decision"] = Decision.MOVE
-            food_seek: float = eater.genes["food_seeking"]
-            movement_choice: str = random.choices(["food", "random"],
-                                                  weights=[food_seek, 1 - food_seek], k=1)[0]
-            if movement_choice == "random":
-                move_direction: tuple = random.choice(DIRECTIONS)
-                move_eater(plot, eater, move_direction)
-            elif movement_choice == "food":
-                closest_plant = get_closest_plant(eater, plot.plants)
-                move_direction = get_direction(eater.location, closest_plant.location)
-                move_eater(plot, eater, move_direction)
-            # print(f"Eater now at {eater.location}") # debugging
-
-        elif task_option == "mate":
-            eater.state["last_decision"] = Decision.MATE
-
-    # go through plot, attempt to feed/mate all eaters
-    for i in range( len(plot.grid) ):
-        for j in range( len(plot.grid[i]) ):
-            # if there is a plant at the current index
-            # we check it for neighboring eaters
-            if plot.grid[i][j] == 1:
-                neighbors = get_neighbor_indices(plot.grid, i, j)
-
-
-    # go through eaters again to determine eating or mating status
-    for eater in plot.eaters:
-        # try to eat for every eater that moved
-        if eater.state["last_decision"] == Decision.MOVE:
-            print("EATER STATE MOVE")
-            strength: int = eater.genes["strength"]
-
-
-        elif eater.state["last_decision"] == Decision.MATE:
-            print("EATER STATE MATE")
-            # add logic to (hopefully) mate
-            mating_score: int = eater.genes["mating_score"]
 
 
 def sim_season(plot: Plot, periods: int = 100):
