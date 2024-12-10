@@ -96,6 +96,7 @@ def move_eater(plot: Plot, eater: Eater, direction: tuple):
     if old_x != new_x or old_y != new_y:
         eater.energy -= 2
 
+
 def is_valid_index(i: int, j: int, n: int, m: int):
     return not (i < 0 or j < 0 or i > n - 1 or j > m - 1)
 def get_neighbors(arr: List, i: int, j: int):
@@ -145,7 +146,6 @@ def get_neighbor_indices(arr: List, i: int, j: int):
 
 def get_item_from_loc(arr: list, loc: tuple):
     for item in arr:
-        # print(f"LOC: {loc}\tEATER_LOC: {eater.location}")
         if item.location == loc:
             return item
     return None
@@ -254,8 +254,6 @@ def random_move(plot: Plot, eater: Eater):
 def sim_period_beta(plot: Plot):
     new_eaters = 0
     for eater in plot.eaters:
-        # log_eater_state(eater)
-
         # Handle mating
         mating_focus: int = eater.genes["mating_focus"]
         task_option: str = random.choices(["mate", "move"],
@@ -272,11 +270,9 @@ def sim_period_beta(plot: Plot):
         if eater.genes["food_seeking"] > random.random():
             seek_food(plot, eater)
         else:
-            # random_move(plot, eater)
             move_eater(plot, eater, random.choice(DIRECTIONS))
     # Add new eaters
-    # for _ in range(new_eaters):
-    #     plot.add_eaters(1)
+
     plot.add_eaters(new_eaters)
 
 
