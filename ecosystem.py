@@ -15,7 +15,10 @@ def get_eater_eng(eaters: List[Eater]):
     eng_sum: float = 0
     for eater in eaters:
         eng_sum += eater.energy
-    return eng_sum / len(eaters)
+    if len(eaters) > 0:
+        return eng_sum / len(eaters)
+    else:
+        return 0
 
 def print_eaters(plot: Plot):
     for eater in plot.eaters:
@@ -272,8 +275,13 @@ def sim_period_beta(plot: Plot):
         else:
             move_eater(plot, eater, random.choice(DIRECTIONS))
     # Add new eaters
-
     plot.add_eaters(new_eaters)
+
+    # remove dead eaters
+    for e in plot.eaters:
+        if e.energy < 0:
+            plot.grid[e.location[0], e.location[1]] = 0
+            plot.eaters.remove(e)
 
 
 def sim_period(plot: Plot):
@@ -408,7 +416,7 @@ def sim_period(plot: Plot):
 def sim_season(plot: Plot, periods: int = 100):
     # simulate the 100 periods
     for _ in range(periods):
-        sim_period(plot)
+        sim_period_beta(plot)
     plot.increase_ages()
 
     # take stats of ecosystem at end of season
@@ -465,12 +473,14 @@ def main():
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 100)
     # display_plot(plot)
-    for i in range(50):
+    # for i in range(100):
+    #
+    #     sim_period_beta(plot)
 
-        sim_period_beta(plot)
-        # sim_period(plot)
+    for i in range(2):
+        sim_season(plot)
+        plot.add_plants(100)
 
-    # sim_period(plot)
 
     energies = set()
 

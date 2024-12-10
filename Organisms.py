@@ -68,7 +68,7 @@ class Plot:
             y: int = random.randint(0, self.size - 1)
             if self.grid[x][y] == 0:
                 self.grid[x][y] = 2
-                this_gene: dict = {"food_seeking": random.random(),
+                this_gene: dict = {"food_seeking": random.randint(50,99)/100,
                              "strength": random.randint(1, 20),
                              "mating_score": random.randint(1, 20),
                              "mating_focus": random.randint(25, 75)/100}
