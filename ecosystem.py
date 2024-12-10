@@ -277,11 +277,20 @@ def sim_period_beta(plot: Plot):
     # Add new eaters
     plot.add_eaters(new_eaters)
 
-    # remove dead eaters
-    for e in plot.eaters:
+    # remove dead eaters using a copied list
+    eaters_copy = plot.eaters.copy()
+    for e in eaters_copy:
         if e.energy < 0:
             plot.grid[e.location[0], e.location[1]] = 0
             plot.eaters.remove(e)
+
+    # make sure eaters don't go over 200 energy
+    for e in plot.eaters:
+        if e.energy > 200:
+            e.energy = 200
+
+    plot.day += 1
+
 
 
 def sim_period(plot: Plot):
@@ -446,21 +455,22 @@ def display_plot(plot: Plot):
     plant_x = [p.location[0] for p in plot.plants]
     plant_y = [p.location[1] for p in plot.plants]
 
-
-
-    # Plot the grid
-    ax.scatter(eater_x, eater_y, color='red', label="Eaters", edgecolor='black', alpha=0.7)
-    ax.scatter(plant_x, plant_y, color='green', label="Plants", edgecolor='black', alpha=0.7)
+    # Plot the points
+    ax.scatter(eater_x, eater_y, color='red', label=f"Eaters ({len(plot.eaters)})", edgecolor='black', alpha=0.7)
+    ax.scatter(plant_x, plant_y, color='green', label=f"Plants ({len(plot.plants)})", edgecolor='black', alpha=0.7)
 
     # Set the limits of the plot
     ax.set_xlim(0, plot.size)
     ax.set_ylim(0, plot.size)
 
+    # add gridlines and legend
     ax.grid(True, which='both', axis='both', linestyle='--', alpha=0.5)
     ax.legend(loc='upper right', bbox_to_anchor=(1.01, 1.1))
 
-    ax.figure.set_size_inches(14, 7.5)
+    ax.set_title(f"Day {plot.day}")
 
+    # set size (works for my screen)
+    ax.figure.set_size_inches(14, 7.5)
 
     # Show the plot
     plt.show()
@@ -472,14 +482,18 @@ def main():
 
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 100)
-    # display_plot(plot)
-    # for i in range(100):
-    #
-    #     sim_period_beta(plot)
+    display_plot(plot)
+    for i in range(200):
+        sim_period_beta(plot)
+        if i%100 == 0 and i > 1:
+            plot.add_plants(100)
+        if i % 25 == 0:
+            display_plot(plot)
 
-    for i in range(2):
-        sim_season(plot)
-        plot.add_plants(100)
+
+    # for i in range(2):
+    #     sim_season(plot)
+    #     plot.add_plants(100)
 
 
     energies = set()
@@ -504,7 +518,7 @@ def main():
     # print_eaters(plot)
     # print_plants(plot)
     # adding some comments here to test
-    # display_plot(plot)
+    display_plot(plot)
 
 if __name__ == "__main__":
     main()

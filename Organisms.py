@@ -12,7 +12,7 @@ class Decision(Enum):
 class Eater:
     def __init__(self, x: int, y: int, genes: Dict):
         self.genes: list = [] # food_seeking, strength, mating_score, mating_focus
-        self.energy: int = 50
+        self.energy: int = 200
         self.age: int = 0
         self.location = (x, y)
         self.genes: Dict = genes
@@ -50,6 +50,7 @@ class Plot:
         self.eaters: list[Eater] = list()
         self.plants: list[Plant] = list()
         self.size: int = size
+        self.day = 0
 
     def add_plants(self, num_plants: int = 100):
         plants_added: int = 0
@@ -68,10 +69,10 @@ class Plot:
             y: int = random.randint(0, self.size - 1)
             if self.grid[x][y] == 0:
                 self.grid[x][y] = 2
-                this_gene: dict = {"food_seeking": random.randint(50,99)/100,
+                this_gene: dict = {"food_seeking": random.randint(99,100)/100,
                              "strength": random.randint(1, 20),
-                             "mating_score": random.randint(1, 20),
-                             "mating_focus": random.randint(25, 75)/100}
+                             "mating_score": random.randint(1, 4),
+                             "mating_focus": random.randint(99, 100)/100}
                 self.eaters.append( Eater(x, y, this_gene) )
                 eaters_added += 1
 
