@@ -12,7 +12,7 @@ class Decision(Enum):
 class Eater:
     def __init__(self, x: int, y: int, genes: Dict):
         self.genes: list = [] # food_seeking, strength, mating_score, mating_focus
-        self.energy: int = 200
+        self.energy: int = 75
         self.age: int = 0
         self.location = (x, y)
         self.genes: Dict = genes
@@ -81,3 +81,15 @@ class Plot:
             eater.inc_age()
         for plant in self.plants:
             plant.inc_age()
+
+    def remove_dead_eaters(self):
+        eaters_copy = self.eaters.copy()
+        for e in eaters_copy:
+            if e.energy < 0:
+                self.grid[e.location[0], e.location[1]] = 0
+                self.eaters.remove(e)
+
+    def cap_energies(self):
+        for e in plot.eaters:
+            if e.energy > 200:
+                e.energy = 200

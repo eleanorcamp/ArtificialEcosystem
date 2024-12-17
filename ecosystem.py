@@ -266,6 +266,7 @@ def sim_period_beta(plot: Plot):
             if eater.state["last_mated"] > 25:
                 if attempt_to_mate(plot, eater):
                     new_eaters += 1
+                    # go to next eater
                     continue
 
         # Handle movement and eating
@@ -274,20 +275,13 @@ def sim_period_beta(plot: Plot):
             seek_food(plot, eater)
         else:
             move_eater(plot, eater, random.choice(DIRECTIONS))
+        
     # Add new eaters
     plot.add_eaters(new_eaters)
 
-    # remove dead eaters using a copied list
-    eaters_copy = plot.eaters.copy()
-    for e in eaters_copy:
-        if e.energy < 0:
-            plot.grid[e.location[0], e.location[1]] = 0
-            plot.eaters.remove(e)
-
-    # make sure eaters don't go over 200 energy
-    for e in plot.eaters:
-        if e.energy > 200:
-            e.energy = 200
+    # remove dead eaters and set energy cap to 200
+    plot.remove_dead_eaters()
+    plot.cap_energies()
 
     plot.day += 1
 
