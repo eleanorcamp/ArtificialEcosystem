@@ -70,10 +70,10 @@ class Plot:
             y: int = random.randint(0, self.size - 1)
             if self.grid[x][y] == 0:
                 self.grid[x][y] = 2
-                this_gene: dict = {"food_seeking": random.randint(25,80)/100,
+                this_gene: dict = {"food_seeking": random.randint(0,50)/100,
                              "strength": random.randint(1, 20),
                              "mating_score": random.randint(1, 10),
-                             "mating_focus": random.randint(50, 85)/100}
+                             "mating_focus": random.randint(90, 100)/100}
                 self.eaters.append( Eater(x, y, this_gene) )
                 eaters_added += 1
 

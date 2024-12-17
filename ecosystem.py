@@ -30,6 +30,7 @@ def print_plants(plot: Plot):
         print(f"There is a plant at {plant.location}")
     print(f"There are currently {len(plot.plants)} total plants")
 
+
 def check_valid_coords(loc: np.ndarray):
     x = loc[0]
     y = loc[1]
@@ -232,7 +233,7 @@ def attempt_to_mate(plot: Plot, eater: Eater):
     return False
 
 
-def seek_food(plot: Plot, eater: Eater):
+def seek_food_old(plot: Plot, eater: Eater):
     if len(plot.plants) < 1:
         return False
     eater_x: int = eater.location[0]
@@ -257,6 +258,15 @@ def seek_food(plot: Plot, eater: Eater):
         for plant in potential_plants:
             if attempt_eat(plot, plant, eater):
                 eat_plant(plot, plant, eater)
+
+def seek_food(plot: Plot, eater: Eater):
+    if len(plot.plants) < 1:
+        return False
+    eater_x: int = eater.location[0]
+    eater_y: int = eater.location[1]
+    closest_plant = get_closest_plant(eater, plot.plants)
+    move_direction = get_direction(eater.location, closest_plant.location)
+    move_eater(plot, eater, move_direction)
 
 def random_move(plot: Plot, eater: Eater):
     move_eater(plot, eater, random.choice(DIRECTIONS))
@@ -313,10 +323,11 @@ def sim_period_beta(plot: Plot):
     for eater in plot.eaters:
         # Handle mating
         mating_focus: int = eater.genes["mating_focus"]
-        task_option: str = random.choices(["mate", "move"],
-                                          weights=[mating_focus, 1 - mating_focus], k=1)[0]
-        # if eater.genes["mating_focus"] > random.random():
-        if task_option == "mate":
+
+        # task_option: str = random.choices(["mate", "move"],
+        #                                   weights=[mating_focus, 1 - mating_focus], k=1)[0]
+        if eater.genes["mating_focus"] > random.random():
+        # if task_option == "mate":
             if eater.state["last_mated"] > 25:
                 if attempt_to_mate(plot, eater):
                     new_eaters += 1
@@ -472,13 +483,17 @@ def sim_period(plot: Plot):
 
 
 
-def sim_season(plot: Plot, periods: int = 100):
+def sim_season(plot: Plot, periods: int = 100, display_flag: bool = False):
     plot.day = 0
     # simulate the 100 periods
     for _ in range(periods):
         sim_period_beta(plot)
+        if display_flag:
+            if plot.day % 25 == 0: display_plot(plot)
     plot.increase_ages()
     plot.season += 1
+
+    if plot.season >= 1: plot.add_plants(100)
 
     # take stats of ecosystem at end of season
     avg_eater_eng: float = get_eater_eng(plot.eaters)
@@ -527,29 +542,72 @@ def display_plot(plot: Plot):
     # Show the plot
     plt.show()
 
+import matplotlib.image as mpimg
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+
+def display_image(plot: Plot):
+    fig, ax = plt.subplots()
+
+    # Load the images
+    leaf_image = mpimg.imread('./leaf.png')  # Path to your leaf image
+    bunny_image = mpimg.imread('./bunny.png')  # Path to your bunny image
+
+    def add_images(ax, image, x_coords, y_coords, zoom=0.05):
+        """Helper function to add images to the scatterplot."""
+        for x, y in zip(x_coords, y_coords):
+            im = OffsetImage(image, zoom=zoom)  # Scale the image with zoom
+            ab = AnnotationBbox(im, (x, y), frameon=False, xycoords='data', pad=0)
+            ax.add_artist(ab)
+
+    # Extract eater and plant locations
+    eater_x = [e.location[0] for e in plot.eaters]
+    eater_y = [e.location[1] for e in plot.eaters]
+    plant_x = [p.location[0] for p in plot.plants]
+    plant_y = [p.location[1] for p in plot.plants]
+
+    # Add eater and plant images
+    add_images(ax, bunny_image, eater_x, eater_y, zoom=0.04)
+    add_images(ax, leaf_image, plant_x, plant_y, zoom=0.03)
+
+    eater_count = len(plot.eaters)
+    plant_count = len(plot.plants)
+    count_text = f"Eaters: {eater_count}\nPlants: {plant_count}"
+    ax.text(
+        1.02, 0.95, count_text,
+        transform=ax.transAxes,
+        fontsize=12,
+        verticalalignment='top',
+        bbox=dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="white", alpha=0.8)
+    )
+
+    # Set plot limits
+    ax.set_xlim(0, plot.size)
+    ax.set_ylim(0, plot.size)
+
+    # Add gridlines and title
+    ax.grid(True, which='both', axis='both', linestyle='--', alpha=0.5)
+    # ax.legend(loc='upper right', bbox_to_anchor=(1.01, 1.1))
+    ax.set_title(f"Season {plot.season}: Day {plot.day}")
+
+    # Adjust figure size
+    ax.figure.set_size_inches(14, 7.5)
+
+    # Show the plot
+    plt.show()
 
 
 def main():
     # print("Main")
 
     plot_size: int = 100
-    plot = setup_plot(plot_size, 100, 100)
-    display_plot(plot)
+    plot = setup_plot(plot_size, 100, 50)
+    # display_image(plot)
     for i in range(10):
-        sim_season(plot, 100)
-        display_plot(plot)
-
-    # for i in range(200):
-    #     sim_period_beta(plot)
-    #     if i%100 == 0 and i > 1:
-    #         plot.add_plants(100)
-    #     if i % 25 == 0:
-    #         display_plot(plot)
+        sim_season(plot, 100, False)
+        # display_plot(plot)
 
 
-    # for i in range(2):
-    #     sim_season(plot)
-    #     plot.add_plants(100)
+    # display_image(plot)
 
 
     energies = set()
@@ -574,7 +632,7 @@ def main():
     # print_eaters(plot)
     # print_plants(plot)
     # adding some comments here to test
-    display_plot(plot)
+    # display_plot(plot)
 
 if __name__ == "__main__":
     main()
