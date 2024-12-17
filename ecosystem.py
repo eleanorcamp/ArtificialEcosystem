@@ -132,7 +132,7 @@ def get_neighbor_indices(arr: List, i: int, j: int):
 
     # Initialising a vector array
     # where adjacent element will be stored
-    v: List = []
+    v: list = []
 
     # Checking for all the possible adjacent positions
     if is_valid_index(i - 1, j - 1, n, m):   v.append( (i-1, j-1) )
@@ -186,6 +186,12 @@ def eat_plant(plot: Plot, plant: Plant, eater: Eater):
     plot.plants.remove(plant)
     # print("ATE A PLANT")
 
+def check_plant_prox(plot: Plot, eater: Eater, plant: Plant):
+    plant_neighbors: list = get_neighbors(plot.grid, plant.location[0], plant.location[1])
+    other_eaters: int = plant_neighbors.count(2)
+    return other_eaters
+
+
 # def move_eater_to_target(plot, eater, target):
 #     direction = get_direction(eater.location, target.location)
 #     move_eater(plot, eater, direction)
@@ -227,6 +233,8 @@ def attempt_to_mate(plot: Plot, eater: Eater):
 
 
 def seek_food(plot: Plot, eater: Eater):
+    if len(plot.plants) < 1:
+        return False
     eater_x: int = eater.location[0]
     eater_y: int = eater.location[1]
     closest_plant = get_closest_plant(eater, plot.plants)
@@ -253,6 +261,52 @@ def seek_food(plot: Plot, eater: Eater):
 def random_move(plot: Plot, eater: Eater):
     move_eater(plot, eater, random.choice(DIRECTIONS))
 
+def divide_plant(plot, plant, max_strength_eaters):
+    plant_loc = plant.location
+    plot.grid[plant_loc[0], plant_loc[1]] = 0
+    for eater in max_strength_eaters:
+        eater.energy += int(100/len(max_strength_eaters))
+    plot.plants.remove(plant)
+
+def handle_eating_competition(plot: Plot, eater: Eater, closest_plant: Plant, plant_neighbors: list):
+    neighbors: list[Eater] = []
+    # same as get_neighbors
+    # eater_count: int = check_plant_prox(plot, closest_plant)
+    eater_locations: list[tuple[int, int]] = get_neighbor_indices(plot.grid, closest_plant.location[0], closest_plant.location[1])
+
+    for loc in eater_locations:
+        neighbor = get_item_from_loc(plot.eaters, loc)
+        if type(neighbor) == Eater and neighbor != eater: neighbors.append(neighbor)
+
+    neighbor_strengths: list[int] = []
+    for neighbor in neighbors:
+        neighbor_strengths.append(neighbor.genes["strength"])
+
+    # for this eater to eat it must have the highest strength of all the neighbors
+    if eater.genes["strength"] == max(neighbor_strengths):
+        # if this eater has the absolute max strength
+        if neighbor_strengths.count(eater.genes["strength"]) == 1:
+            eat_plant(plot, closest_plant, eater)
+            return
+
+    max_strength_eaters = [e for e in neighbors if e.genes["strength"] == eater.genes["strength"]]
+    if eater not in max_strength_eaters:
+        max_strength_eaters.append(eater)
+        print("SUCCESS ON THIS ONE PART")
+    divide_plant(plot, closest_plant, max_strength_eaters)
+
+def handle_eating(plot: Plot, eater: Eater):
+    if len(plot.plants) < 1:
+        return False
+    closest_plant: Plant = get_closest_plant(eater, plot.plants)
+    plant_neighbors: list = get_neighbors(plot.grid, closest_plant.location[0], closest_plant.location[1])
+    num_eaters: int = plant_neighbors.count(2)
+    # just the current eater
+    if num_eaters == 1:
+        eat_plant(plot, closest_plant, eater)
+    elif num_eaters > 1:
+        handle_eating_competition(plot, eater, closest_plant, plant_neighbors)
+
 
 def sim_period_beta(plot: Plot):
     new_eaters = 0
@@ -275,6 +329,8 @@ def sim_period_beta(plot: Plot):
             seek_food(plot, eater)
         else:
             move_eater(plot, eater, random.choice(DIRECTIONS))
+
+        handle_eating(plot, eater)
         
     # Add new eaters
     plot.add_eaters(new_eaters)
@@ -417,10 +473,12 @@ def sim_period(plot: Plot):
 
 
 def sim_season(plot: Plot, periods: int = 100):
+    plot.day = 0
     # simulate the 100 periods
     for _ in range(periods):
         sim_period_beta(plot)
     plot.increase_ages()
+    plot.season += 1
 
     # take stats of ecosystem at end of season
     avg_eater_eng: float = get_eater_eng(plot.eaters)
@@ -461,7 +519,7 @@ def display_plot(plot: Plot):
     ax.grid(True, which='both', axis='both', linestyle='--', alpha=0.5)
     ax.legend(loc='upper right', bbox_to_anchor=(1.01, 1.1))
 
-    ax.set_title(f"Day {plot.day}")
+    ax.set_title(f"Season {plot.season}: Day {plot.day}")
 
     # set size (works for my screen)
     ax.figure.set_size_inches(14, 7.5)
@@ -477,12 +535,16 @@ def main():
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 100)
     display_plot(plot)
-    for i in range(200):
-        sim_period_beta(plot)
-        if i%100 == 0 and i > 1:
-            plot.add_plants(100)
-        if i % 25 == 0:
-            display_plot(plot)
+    for i in range(10):
+        sim_season(plot, 100)
+        display_plot(plot)
+
+    # for i in range(200):
+    #     sim_period_beta(plot)
+    #     if i%100 == 0 and i > 1:
+    #         plot.add_plants(100)
+    #     if i % 25 == 0:
+    #         display_plot(plot)
 
 
     # for i in range(2):

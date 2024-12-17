@@ -51,6 +51,7 @@ class Plot:
         self.plants: list[Plant] = list()
         self.size: int = size
         self.day = 0
+        self.season = 0
 
     def add_plants(self, num_plants: int = 100):
         plants_added: int = 0
@@ -69,10 +70,10 @@ class Plot:
             y: int = random.randint(0, self.size - 1)
             if self.grid[x][y] == 0:
                 self.grid[x][y] = 2
-                this_gene: dict = {"food_seeking": random.randint(99,100)/100,
+                this_gene: dict = {"food_seeking": random.randint(25,80)/100,
                              "strength": random.randint(1, 20),
-                             "mating_score": random.randint(1, 4),
-                             "mating_focus": random.randint(99, 100)/100}
+                             "mating_score": random.randint(1, 10),
+                             "mating_focus": random.randint(50, 85)/100}
                 self.eaters.append( Eater(x, y, this_gene) )
                 eaters_added += 1
 
@@ -90,6 +91,6 @@ class Plot:
                 self.eaters.remove(e)
 
     def cap_energies(self):
-        for e in plot.eaters:
+        for e in self.eaters:
             if e.energy > 200:
                 e.energy = 200
