@@ -485,7 +485,9 @@ def sim_period(plot: Plot):
 
 def sim_season(plot: Plot, periods: int = 100, display_flag: bool = False):
     plot.day = 0
+    if plot.season >= 1: plot.add_plants(100)
     # simulate the 100 periods
+
     for _ in range(periods):
         sim_period_beta(plot)
         if display_flag:
@@ -493,7 +495,7 @@ def sim_season(plot: Plot, periods: int = 100, display_flag: bool = False):
     plot.increase_ages()
     plot.season += 1
 
-    if plot.season >= 1: plot.add_plants(100)
+
 
     # take stats of ecosystem at end of season
     avg_eater_eng: float = get_eater_eng(plot.eaters)
@@ -590,40 +592,40 @@ def display_image(plot: Plot):
     ax.set_title(f"Season {plot.season}: Day {plot.day}")
 
     # Adjust figure size
-    ax.figure.set_size_inches(14, 7.5)
+    # ax.figure.set_size_inches(14, 7.5)
 
     # Show the plot
     plt.show()
 
 
-def main():
-    # print("Main")
-
-    plot_size: int = 100
-    plot = setup_plot(plot_size, 100, 50)
-    # display_image(plot)
-    for i in range(10):
-        sim_season(plot, 100, False)
-        # display_plot(plot)
-
-
-    # display_image(plot)
-
-
-    energies = set()
-
-    for e in plot.eaters:
-        energies.add(e.energy)
-
-    dead_count = 0
-    for e in energies:
-        if e < 0:
-            dead_count+=1
-
-
-    print(f"list of energies: {energies}")
-    print(f"dead count: {dead_count}")
-    print(f"num_eaters: {len(plot.eaters)}")
+# def main():
+#     # print("Main")
+#
+#     plot_size: int = 100
+#     plot = setup_plot(plot_size, 100, 50)
+#     # display_image(plot)
+#     for i in range(10):
+#         sim_season(plot, 100, False)
+#         # display_plot(plot)
+#
+#
+#     # display_image(plot)
+#
+#
+#     energies = set()
+#
+#     for e in plot.eaters:
+#         energies.add(e.energy)
+#
+#     dead_count = 0
+#     for e in energies:
+#         if e < 0:
+#             dead_count+=1
+#
+#
+#     print(f"list of energies: {energies}")
+#     print(f"dead count: {dead_count}")
+#     print(f"num_eaters: {len(plot.eaters)}")
 
     # for e in plot.eaters:
     #     if e.state["wins"] > 0 or e.state["losses"] > 0:
@@ -634,5 +636,5 @@ def main():
     # adding some comments here to test
     # display_plot(plot)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+    # main()
