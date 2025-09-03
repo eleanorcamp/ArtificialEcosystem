@@ -551,8 +551,8 @@ def display_image(plot: Plot):
     fig, ax = plt.subplots()
 
     # Load the images
-    leaf_image = mpimg.imread('./leaf.png')  # Path to your leaf image
-    bunny_image = mpimg.imread('./bunny.png')  # Path to your bunny image
+    leaf_image = mpimg.imread('./pics/leaf.png')  # Path to your leaf image
+    bunny_image = mpimg.imread('./pics/bunny.png')  # Path to your bunny image
 
     def add_images(ax, image, x_coords, y_coords, zoom=0.05):
         """Helper function to add images to the scatterplot."""
