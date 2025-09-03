@@ -11,6 +11,9 @@ class DataContainer:
         self.plants: list = []
         self.plant_count: int = 0
         self.energy_list: list = []
+        self.mated_list: list = []
+        self.death_count: int = 0
+        self.reproduce_count: int = 0
 
     def update_genes(self, eaters: list[Eater]):
         food_seeking: list = []
@@ -38,3 +41,12 @@ class DataContainer:
         self.plants = plants
         self.eater_count = len(plants)
 
+    def update_mated_list(self, plot: Plot):
+        self.mated_list = plot.mated_list
+        self.reproduce_count = len(self.mated_list)
+
+    def update_dead_eaters(self, dead_eaters: list[Eater]):
+        self.death_count = len(dead_eaters)
+
+    def update_energy_levels(self, eaters: list[Eater]):
+        self.energy_list = [eater.energy for eater in eaters]
