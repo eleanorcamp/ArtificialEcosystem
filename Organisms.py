@@ -4,6 +4,11 @@ import numpy as np
 import random
 from math import dist
 
+
+
+    # self.eaters.append( Eater(x, y, child_genes) )
+    # self.grid[x][y] = 2
+
 class Decision(Enum):
     MOVE = "move"
     MATE = "mate"
@@ -50,8 +55,10 @@ class Plot:
         self.eaters: list[Eater] = list()
         self.plants: list[Plant] = list()
         self.size: int = size
-        self.day = 0
-        self.season = 0
+        self.day: int = 0
+        self.season: int = 0
+        self.dead_eaters: list[Eater] = []
+        self.mated_list: list[Eater] = []
 
     def add_plants(self, num_plants: int = 100):
         plants_added: int = 0
@@ -70,12 +77,20 @@ class Plot:
             y: int = random.randint(0, self.size - 1)
             if self.grid[x][y] == 0:
                 self.grid[x][y] = 2
-                this_gene: dict = {"food_seeking": random.randint(0,50)/100,
+                this_gene: dict = {"food_seeking": random.randint(0,100)/100,
                              "strength": random.randint(1, 20),
-                             "mating_score": random.randint(1, 10),
-                             "mating_focus": random.randint(90, 100)/100}
+                             "mating_score": random.randint(1, 20),
+                             "mating_focus": random.randint(0, 100)/100}
                 self.eaters.append( Eater(x, y, this_gene) )
                 eaters_added += 1
+
+
+
+    def add_child_eater(self, eater: Eater):
+        eater_x = eater.location[0]
+        eater_y = eater.location[1]
+        self.grid[eater_x][eater_y] = 2
+        self.eaters.append(eater)
 
     def increase_ages(self):
         for eater in self.eaters:
@@ -89,8 +104,15 @@ class Plot:
             if e.energy < 0:
                 self.grid[e.location[0], e.location[1]] = 0
                 self.eaters.remove(e)
+                self.dead_eaters.append(e)
 
     def cap_energies(self):
         for e in self.eaters:
             if e.energy > 200:
                 e.energy = 200
+
+    def clear_mated_list(self):
+        self.mated_list = []
+
+    def clear_dead_list(self):
+        self.dead_eaters = []

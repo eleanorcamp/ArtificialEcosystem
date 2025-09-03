@@ -4,6 +4,8 @@ from typing import List
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 
 
@@ -154,32 +156,6 @@ def get_item_from_loc(arr: list, loc: tuple):
             return item
     return None
 
-def attempt_eat(plot: Plot, plant: Plant, eater: Eater):
-    # print("ATTEMPTED")
-    plant_neighbors = get_neighbors(plot.grid, plant.location[0], plant.location[1])
-    num_eaters = plant_neighbors.count(2)
-    if num_eaters == 1:
-        return True
-    elif num_eaters > 1:
-        print("COMPETITION")
-        eater_neighbors: list = []
-        eater_neighbor_locs = get_neighbor_indices(plot.grid, plant.location[0], plant.location[1])
-        for loc in eater_neighbor_locs:
-            neighbor = get_item_from_loc(plot.eaters, loc)
-            if neighbor: eater_neighbors.append(neighbor)
-
-        for neighbor in eater_neighbors:
-            if neighbor.genes["strength"] > eater.genes["strength"]:
-                eater.state["losses"] += 1
-                neighbor.state["wins"] += 1
-                print("THIS EATER LOST\n")
-                return False
-            neighbor.state["losses"] += 1
-    eater.state["wins"] += 1
-
-    print("THIS EATER WON\n")
-    return True
-
 def eat_plant(plot: Plot, plant: Plant, eater: Eater):
     plant_loc = plant.location
     plot.grid[plant_loc[0], plant_loc[1]] = 0
@@ -192,10 +168,6 @@ def check_plant_prox(plot: Plot, eater: Eater, plant: Plant):
     other_eaters: int = plant_neighbors.count(2)
     return other_eaters
 
-
-# def move_eater_to_target(plot, eater, target):
-#     direction = get_direction(eater.location, target.location)
-#     move_eater(plot, eater, direction)
 
 def find_potential_mate(plot: Plot, eater: Eater):
     eater_x: int = eater.location[0]
@@ -229,35 +201,8 @@ def attempt_to_mate(plot: Plot, eater: Eater):
             pm.state["last_mated"] = 0
             eater.state["last_decision"] = Decision.MATE
             pm.state["last_decision"] = Decision.MATE
-            return True
+            return pm
     return False
-
-
-def seek_food_old(plot: Plot, eater: Eater):
-    if len(plot.plants) < 1:
-        return False
-    eater_x: int = eater.location[0]
-    eater_y: int = eater.location[1]
-    closest_plant = get_closest_plant(eater, plot.plants)
-    move_direction = get_direction(eater.location, closest_plant.location)
-    move_eater(plot, eater, move_direction)
-    eater_neighbors: list = get_neighbors(plot.grid, eater.location[0], eater.location[1])
-    if 1 in eater_neighbors:
-
-        potential_plant_locations: List[tuple] = get_neighbor_indices(plot.grid, eater_x, eater_y)
-        potential_plants: List[Plant] = []
-        for point in potential_plant_locations:
-
-            potential_plant = get_item_from_loc(plot.plants, point)
-            # print(potential_plant)
-            # p
-            if potential_plant:
-                # print("POTENTIAL")
-                potential_plants.append(potential_plant)
-
-        for plant in potential_plants:
-            if attempt_eat(plot, plant, eater):
-                eat_plant(plot, plant, eater)
 
 def seek_food(plot: Plot, eater: Eater):
     if len(plot.plants) < 1:
@@ -302,7 +247,6 @@ def handle_eating_competition(plot: Plot, eater: Eater, closest_plant: Plant, pl
     max_strength_eaters = [e for e in neighbors if e.genes["strength"] == eater.genes["strength"]]
     if eater not in max_strength_eaters:
         max_strength_eaters.append(eater)
-        print("SUCCESS ON THIS ONE PART")
     divide_plant(plot, closest_plant, max_strength_eaters)
 
 def handle_eating(plot: Plot, eater: Eater):
@@ -318,19 +262,41 @@ def handle_eating(plot: Plot, eater: Eater):
         handle_eating_competition(plot, eater, closest_plant, plant_neighbors)
 
 
-def sim_period_beta(plot: Plot):
+def make_child_genes(eater: Eater, mate: Eater):
+    child_fs = (eater.genes["food_seeking"] + mate.genes["food_seeking"])/2
+    child_st = (eater.genes["strength"] + mate.genes["strength"]) / 2
+    child_ms = (eater.genes["mating_score"] + mate.genes["mating_score"]) / 2
+    child_mf = (eater.genes["mating_focus"] + mate.genes["mating_focus"]) / 2
+    return {"food_seeking": child_fs, "strength": child_st, "mating_score": child_ms, "mating_focus": child_mf}
+
+
+def make_child_eater(plot: Plot, genes: dict):
+    valid = False
+    x = -1
+    y = -1
+    while not valid:
+        x: int = random.randint(0, plot.size - 1)
+        y: int = random.randint(0, plot.size - 1)
+        if plot.grid[x][y] == 0:
+            valid = True
+    return Eater(x, y, genes)
+
+def sim_period(plot: Plot):
     new_eaters = 0
+    child_eaters = []
     for eater in plot.eaters:
         # Handle mating
-        mating_focus: int = eater.genes["mating_focus"]
-
-        # task_option: str = random.choices(["mate", "move"],
-        #                                   weights=[mating_focus, 1 - mating_focus], k=1)[0]
         if eater.genes["mating_focus"] > random.random():
         # if task_option == "mate":
             if eater.state["last_mated"] > 25:
-                if attempt_to_mate(plot, eater):
-                    new_eaters += 1
+                potential_parent = attempt_to_mate(plot, eater)
+                if potential_parent:
+                    child_genes = make_child_genes(eater, potential_parent)
+                    baby_eater = make_child_eater(plot, child_genes)
+                    child_eaters.append(baby_eater)
+
+                    plot.mated_list.append(eater)
+                    plot.mated_list.append(potential_parent)
                     # go to next eater
                     continue
 
@@ -344,7 +310,8 @@ def sim_period_beta(plot: Plot):
         handle_eating(plot, eater)
         
     # Add new eaters
-    plot.add_eaters(new_eaters)
+    for e in child_eaters:
+        plot.add_child_eater(e)
 
     # remove dead eaters and set energy cap to 200
     plot.remove_dead_eaters()
@@ -354,148 +321,17 @@ def sim_period_beta(plot: Plot):
 
 
 
-def sim_period(plot: Plot):
-    # print_plants(plot.plants)
-    new_eaters: int = 0
-    for eater in plot.eaters:
-        eater_x: int = eater.location[0]
-        eater_y: int = eater.location[1]
-        # eater.state["last_mated"] += 1
-        if eater.state["last_mated"] > 25:
-            # print("I shouldn't be here")
-
-
-            mating_focus: int = eater.genes["mating_focus"]
-            task_option: str = random.choices(["mate", "move"],
-                                              weights=[mating_focus, 1-mating_focus], k=1)[0]
-            # print(f"TASK: {task_option}")
-            if task_option == "mate":
-
-                eater_x: int = eater.location[0]
-                eater_y: int = eater.location[1]
-                # eater.state["last_decision"] = Decision.MATE
-                eater_neighbors: list = get_neighbors( plot.grid, eater.location[0], eater.location[1] )
-                # if this eater has other eaters in its surrounding area
-                if 2 in eater_neighbors:
-                    eater.state["debugging"] = "IN THE LOOP"
-                    eater_mate_score: int = eater.genes["mating_score"]
-                    # find locations of potential mates
-                    potential_mates_locations: List[tuple] = get_neighbor_indices(plot.grid, eater_x, eater_y)
-
-                    # make a list of potential mates from those locations
-                    potential_mates: List[Eater] = []
-                    for point in potential_mates_locations:
-                        potential_mate = get_item_from_loc(plot.eaters, point)
-                        if potential_mate: potential_mates.append(potential_mate)
-
-                    # go through potential mates to (hopefully) find a pair
-                    for pm in potential_mates:
-                        # if two eaters are same sex go to the next potential_mate
-                        if eater.sex == pm.sex:
-                            continue
-                        # if eater mating_score is too low go to the next
-                        if eater.sex == "male" and eater_mate_score < pm.genes["mating_score"]:
-                            continue
-                        # if potential mate mating_score is too low go to the next
-                        if eater.sex == "female" and eater_mate_score > pm.genes["mating_score"]:
-                            continue
-                        else:
-                            # print(f"{eater.sex.upper()}: {eater_mate_score}  AND "
-                                  # f"{pm.sex} potential mate: {pm.genes["mating_score"]}")
-                            # print(f"BEFORE UPDATE:  {eater.state["last_mated"]}")
-                            # reset eaters' last_mated
-                            eater.state["last_mated"] = 0
-                            pm.state["last_mated"] = 0
-                            # print(f"AFTER UPDATE:  {eater.state["last_mated"]}\n")
-
-                            eater.state["last_decision"] = Decision.MATE
-                            pm.state["last_decision"] = Decision.MATE
-                            # add child eater to random spot
-
-                            # plot.add_eaters(1)
-                            # keep track of how many new eaters we need to add
-                            # at the end of the period
-                            new_eaters += 1
-                            # print("WE HAVE A MATE")
-                            break
-                    # after an eater has successfully mated, go to the next one
-                    if eater.state["last_decision"] == Decision.MATE: continue
-
-                    # Update the eaters that tried to mate but could not
-                    eater.state["debugging"] = "unsuccessful mate"
-                    eater.state["last_decision"] = Decision.FAILED_MATE
-                    # print("unsuccessful mate")
-                    # update the last_mated count and move to next eater in plot
-                    if eater.state["last_decision"] == Decision.FAILED_MATE: eater.state["last_mated"] += 1
-                    # if eater.state["last_mated"] > 0: eater.state["last_mated"] += 1
-                    continue
-        # else:
-
-        # getting to this point is all the eaters that did not want to mate
-        # handle the food/random movement
-        if eater.state["last_decision"] != Decision.MATE:
-            eater.state["last_decision"] = Decision.MOVE
-            eater.state["last_mated"] += 1
-            # get choice of random movement or food movement
-            food_seeking = eater.genes["food_seeking"]
-            move_option: str = random.choices(["food", "random"],
-                                              weights=[food_seeking, 1-food_seeking], k=1)[0]
-            if move_option == "food":
-                closest_plant = get_closest_plant(eater, plot.plants)
-                move_direction = get_direction(eater.location, closest_plant.location)
-                move_eater(plot, eater, move_direction)
-            if move_option == "random":
-                move_eater(plot, eater, random.choice(DIRECTIONS))
-            # after moving the eater check for plants and try to eat
-            eater_neighbors: list = get_neighbors(plot.grid, eater.location[0], eater.location[1])
-            if 1 in eater_neighbors:
-
-                potential_plant_locations: List[tuple] = get_neighbor_indices(plot.grid, eater_x, eater_y)
-                potential_plants: List[Plant] = []
-                for point in potential_plant_locations:
-
-                    potential_plant = get_item_from_loc(plot.plants, point)
-                    # print(potential_plant)
-                    # p
-                    if potential_plant:
-                        # print("POTENTIAL")
-                        potential_plants.append(potential_plant)
-
-                for plant in potential_plants:
-                    if attempt_eat(plot, plant, eater):
-                        eat_plant(plot, plant, eater)
-
-
-
-
-
-
-    nums = set()
-    for eater in plot.eaters:
-        nums.add(eater.state["last_mated"])
-        # print(f"{eater.state["debugging"]}  {eater.state["last_mated"]}")
-    # print(f"list of days since mated: {nums}")
-    plot.add_eaters(new_eaters)
-
-
-
-
-
-
-
 def sim_season(plot: Plot, periods: int = 100, display_flag: bool = False):
     plot.day = 0
     if plot.season >= 1: plot.add_plants(100)
     # simulate the 100 periods
 
     for _ in range(periods):
-        sim_period_beta(plot)
+        sim_period(plot)
         if display_flag:
             if plot.day % 25 == 0: display_plot(plot)
     plot.increase_ages()
     plot.season += 1
-
-
 
     # take stats of ecosystem at end of season
     avg_eater_eng: float = get_eater_eng(plot.eaters)
@@ -509,12 +345,6 @@ def setup_plot(size: int = 100, plant_count: int = 100, eater_count: int = 25):
     # location, and random values for all genes
     plot.add_eaters(eater_count)
     return plot
-
-def print_plants(plants: list):
-    s = set()
-    for p in plants:
-        s.add(type(p))
-    print(s)
 
 
 def display_plot(plot: Plot):
@@ -544,8 +374,7 @@ def display_plot(plot: Plot):
     # Show the plot
     plt.show()
 
-import matplotlib.image as mpimg
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+
 
 def display_image(plot: Plot):
     fig, ax = plt.subplots()
@@ -592,49 +421,7 @@ def display_image(plot: Plot):
     ax.set_title(f"Season {plot.season}: Day {plot.day}")
 
     # Adjust figure size
-    # ax.figure.set_size_inches(14, 7.5)
+    ax.figure.set_size_inches(14, 7.5)
 
     # Show the plot
     plt.show()
-
-
-# def main():
-#     # print("Main")
-#
-#     plot_size: int = 100
-#     plot = setup_plot(plot_size, 100, 50)
-#     # display_image(plot)
-#     for i in range(10):
-#         sim_season(plot, 100, False)
-#         # display_plot(plot)
-#
-#
-#     # display_image(plot)
-#
-#
-#     energies = set()
-#
-#     for e in plot.eaters:
-#         energies.add(e.energy)
-#
-#     dead_count = 0
-#     for e in energies:
-#         if e < 0:
-#             dead_count+=1
-#
-#
-#     print(f"list of energies: {energies}")
-#     print(f"dead count: {dead_count}")
-#     print(f"num_eaters: {len(plot.eaters)}")
-
-    # for e in plot.eaters:
-    #     if e.state["wins"] > 0 or e.state["losses"] > 0:
-    #         print(f"Wins: {e.state["wins"]}\tLoses: {e.state["losses"]}")
-
-    # print_eaters(plot)
-    # print_plants(plot)
-    # adding some comments here to test
-    # display_plot(plot)
-
-# if __name__ == "__main__":
-    # main()
