@@ -297,7 +297,7 @@ def plot_reproduction_and_death_trends(containers: dict):
     plt.tight_layout()
     plt.show()
 
-def main():
+def run_plots():
     plot_size: int = 100
     plot = setup_plot(plot_size, 100, 50)
     # display_image(plot)
@@ -339,5 +339,4 @@ def main():
     plot_energy_levels(containers)
 
 
-if __name__ == "__main__":
-    main()
+run_plots()
