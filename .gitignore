@@ -1,0 +1,49 @@
+# Byte-code files
+*.pyc
+*.pyd
+*.pyo
+__pycache__/
+
+# Virtual environment
+.venv/
+venv/
+env/
+/bin/
+/include/
+/lib/
+/share/
+/Scripts/
+/Lib/
+/local/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*~
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite3
+db.sqlite3
+
+# Configuration files
+.env
+*.ini
+*.cfg
+*.conf
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.coverage
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+# Miscellaneous
+tmp/
