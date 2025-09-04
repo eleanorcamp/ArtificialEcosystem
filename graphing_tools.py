@@ -92,16 +92,6 @@ def plot_energy_levels(containers: dict):
     plt.grid(True)
     plt.show()
 
-def plot_pie_chart(container: DataContainer, title: str):
-    data = container.get_pie_chart_data()
-    labels = ['Reproduction', 'Death', 'Survival']
-    sizes = [data['reproduction'], data['death'], data['survival']]
-    colors = ['#ff9999', '#66b3ff', '#99ff99']
-
-    plt.figure(figsize=(6, 6))
-    plt.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=140)
-    plt.title(f'{title} - Reproduction, Death, Survival')
-    plt.show()
 
 
 def normalize_data(data):
